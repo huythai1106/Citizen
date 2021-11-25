@@ -1,4 +1,6 @@
-const Auth = require('../Models/Auth')
+const bcrypt = require('bcryptjs');
+const Auth = require('../Models/Auth');
+
 
 class AuthController {
     homepage(req, res) {
@@ -7,10 +9,16 @@ class AuthController {
     
     //POST api/auth/register
     async register(req, res, next) {
-        const auth = new Auth(req.body);
         try {
-            await auth.save();
-            res.json(auth);
+            const salt = await bcrypt.genSalt(10);
+            const hashPassword = await bcrypt.hash(req.body.password, salt);
+            const auth = new Auth({
+                id: req.body.id,
+                name: req.body.name,
+                password: hashPassword,
+            });
+            const newAuth = await auth.save();
+            res.json(newAuth);
         }
         catch(err) {
             res.json(err);
@@ -22,15 +30,12 @@ class AuthController {
         try {
             const auth = await Auth.findOne({id : req.body.id});
             if (!auth) {
-                const err = new Error({
-                    message : 'Invalid',
-                })
+                const err = new Error('Invalid')
                 return res.json({message: err.message});
             }
-            if (req.body.password !== auth.password) {
-                const err = new Error({
-                    message : 'Invalid password',
-                })
+            const checkPassword = await bcrypt.compare(req.body.password, auth.password);
+            if (!checkPassword) {
+                const err = new Error('Invalid password')
                 return res.json({message: err.message});
             }
 
