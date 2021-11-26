@@ -18,10 +18,10 @@ class AuthController {
                 password: hashPassword,
             });
             const newAuth = await auth.save();
-            res.json(newAuth);
+            res.status(200).json(newAuth);
         }
         catch(err) {
-            res.json(err);
+            res.status(500).json(err);
         }
     }
 
@@ -31,28 +31,50 @@ class AuthController {
             const auth = await Auth.findOne({id : req.body.id});
             if (!auth) {
                 const err = new Error('Invalid')
-                return res.json({message: err.message});
+                return res.status(403).json({message: err.message});
             }
             const checkPassword = await bcrypt.compare(req.body.password, auth.password);
             if (!checkPassword) {
                 const err = new Error('Invalid password')
-                return res.json({message: err.message});
+                return res.status(403).json({message: err.message});
             }
-
-            res.json(auth)
+            res.status(200).json(auth)
         }
         catch(err) {
-            res.json(err);
+            res.status(403).json(err);
         }
         
     }
 
     // DELETE api/auth/logout
-    logout(req, res) {
-
+    async logout(req, res, next) {
+       
     }
 
-    
+    // DELETE api/auth/destroy
+    async destroy(req, res, next) {
+        try {
+            await Auth.deleteOne({id : req.body.id});
+
+            res.status(200).json({message: 'sussess'});
+        }
+        catch (err) {
+            res.status(500).json({message: 'Falire'});
+        }
+    }
+
+    // GET api/auth/:id
+    getAccount(req, res, next) {
+        const idFiled = req.params.id;
+        Auth.find({
+            id: {
+                $regex: `^${idFiled}[0-9][0-9]`,
+            }
+        })
+        .then( data => {
+            res.json(data);
+        })
+    }
 }
 
 module.exports = new AuthController();
