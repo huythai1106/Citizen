@@ -3,6 +3,8 @@ const app = express();
 const Route = require('./Routers');
 const db = require('./Config/db');
 
+require('dotenv').config();
+
 db.connect();
 
 const PORT = 3000;

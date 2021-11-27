@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const Auth = require('../Models/Auth');
+const jwt = require('jsonwebtoken');
 
 
 class AuthController {
@@ -9,16 +10,27 @@ class AuthController {
     
     //POST api/auth/register
     async register(req, res, next) {
+        const id = req.body.id;
         try {
             const salt = await bcrypt.genSalt(10);
             const hashPassword = await bcrypt.hash(req.body.password, salt);
-            const auth = new Auth({
-                id: req.body.id,
-                name: req.body.name,
-                password: hashPassword,
-            });
-            const newAuth = await auth.save();
-            res.status(200).json(newAuth);
+
+            if ( req.authId == '00' || id.startsWith(req.authId)) {
+                const auth = new Auth({
+                    id: req.body.id,
+                    name: req.body.name,
+                    password: hashPassword,
+                });
+                const newAuth = await auth.save();
+                res.status(200).json({
+                    message: req.authId,
+                    data: newAuth,
+                });
+            } else {
+                return res.status(400).json({ 
+                    message: 'dont have permission',
+                })
+            }
         }
         catch(err) {
             res.status(500).json(err);
@@ -38,9 +50,18 @@ class AuthController {
                 const err = new Error('Invalid password')
                 return res.status(403).json({message: err.message});
             }
-            res.status(200).json(auth)
+            const token = jwt.sign( {authId: auth.id}, process.env.TOKEN_SECRET)
+
+            res.status(200).json({
+                status: 'success',
+                data: {
+                    token: token,
+                    name: auth.name,
+                }
+            })
         }
         catch(err) {
+            // 
             res.status(403).json(err);
         }
         
