@@ -6,7 +6,8 @@ const Citizen = new Schema({
     name: {type: String, require: true},
     DOB: {type: Date, require: true},
     sex: {type: String, require: true},
-    address: {type: String, require: true}, // id xxyyzz
+    address: {type: String, require: true}, // id 010205 -> check auths
+    key: {type: Schema.Types.ObjectId, require: true, ref:'Auth'},
 }, {
     timestamps: true,
 })

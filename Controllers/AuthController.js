@@ -5,7 +5,10 @@ const jwt = require('jsonwebtoken');
 
 class AuthController {
     homepage(req, res) {
-        res.send('homepage');
+        res.json({
+            message: 'Welcome',
+            name: 'homepage',
+        });
     }
     
     //POST api/auth/register
@@ -20,6 +23,7 @@ class AuthController {
                     id: req.body.id,
                     name: req.body.name,
                     password: hashPassword,
+                    role: req.body.role, // 0 1 2 3 4
                 });
                 const newAuth = await auth.save();
                 res.status(200).json({
@@ -89,12 +93,27 @@ class AuthController {
         const idFiled = req.params.id;
         Auth.find({
             id: {
-                $regex: `^${idFiled}[0-9][0-9]`,
+                $regex: `^${idFiled}[0-9][0-9]`, // id gốc 01 -> 01xx
             }
         })
         .then( data => {
             res.json(data);
         })
+    }
+
+    // PATCH api/auth/:id/changePassword
+    changePassword(req, res , next) {
+
+    }
+
+    // PATCH api/auth//:id/changeAllStatus
+    changeStatus(req, res , next) {
+
+    }
+
+    // PATCH api/auth/:id/changeStatus/:subId
+    changeAllStatus(req, res , next) {
+
     }
 }
 
