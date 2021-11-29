@@ -12,7 +12,9 @@ module.exports = async function(req, res, next) {
     
         const adminAuth = await Auth.findOne({ id: "00" });
         if (adminAuth.state === false) {
-            return res.status(403).json({message: 'You are not allowed to access this by admin'})
+            const err = new Error('You are not allowed to access');
+            err.statusCode = 403;
+            return next(err);
         }
     
         for (var i = 0 ; i < req.role - 1; i++) {   
@@ -26,7 +28,9 @@ module.exports = async function(req, res, next) {
         }
     
         if (isCheck === false) {
-            return res.status(403).json({message: 'You are not allowed to access this'})
+            const err = new Error('You are not allowed to access');
+            err.statusCode = 403;
+            return next(err);
         }
         else {
             return next();

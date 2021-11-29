@@ -4,6 +4,7 @@ const Route = require('./Routers');
 const db = require('./Config/db');
 const cors = require('cors');
 
+const errorHandler = require('./Middlewares/errorHandler');
 require('dotenv').config();
 
 db.connect();
@@ -17,5 +18,12 @@ app.use(express.urlencoded({
 }))
 
 Route(app);
+app.all('*', (req, res , next) => {
+    const err = new Error("The route can not be found");
+    err.statusCode = 404;
+    next(err);
+})
+
+app.use(errorHandler);
 
 app.listen(PORT, console.log('App listening on port ' + PORT))

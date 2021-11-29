@@ -30,7 +30,7 @@ class AuthController {
             });
         }
         catch(err) {
-            res.status(500).json(err);
+            // err
         }
     }
 
@@ -60,7 +60,8 @@ class AuthController {
             }
         }
         catch(err) {
-            res.status(500).json(err);
+            // res.json(err);
+            next(err);
         }
     }
 
@@ -69,13 +70,15 @@ class AuthController {
         try {
             const auth = await Auth.findOne({id : req.body.id});
             if (!auth) {
-                const err = new Error('Invalid')
-                return res.status(403).json({message: err.message});
+                const err = new Error('Invalid id');
+                err.statusCode = 400;
+                return next(err);
             }
             const checkPassword = await bcrypt.compare(req.body.password, auth.password);
             if (!checkPassword) {
                 const err = new Error('Invalid password')
-                return res.status(403).json({message: err.message});
+                err.statusCode = 400;
+                return next(err);
             }
             const token = jwt.sign( {authId: auth.id, role: auth.role, state: auth.state}, process.env.TOKEN_SECRET)
 
@@ -83,13 +86,16 @@ class AuthController {
                 status: 'success',
                 data: {
                     token: token,
+                    id: auth.id,
                     name: auth.name,
+                    role: auth.role,
+                    state: auth.state,
                 }
             })
         }
         catch(err) {
             // 
-            res.status(403).json(err);
+            res.json(err);
         }
         
     }
@@ -99,19 +105,26 @@ class AuthController {
        
     }
 
-    // DELETE api/auth/destroy
+    // DELETE api/auth/:id/ 
     async destroy(req, res, next) {
-        try {
-            await Auth.deleteOne({id : req.body.id});
-
-            res.status(200).json({message: 'sussess'});
+        const subId = req.params.id;
+        if (subId.startsWith(req.authId)) {
+            try {
+                await Auth.deleteOne({id : subId});
+                res.status(200).json({message: 'sussess'});
+            }
+            catch (err) {
+                next(err);
+            }
         }
-        catch (err) {
-            res.status(500).json({message: 'Falire'});
+        else {
+            const err = new Error('You dont have permission');
+            err.statusCode = 403;
+            next(err);
         }
     }
 
-    // GET api/auth/:id
+    // GET api/auth/:id/getAllAccount
     getAccount(req, res, next) {
         const idFiled = req.params.id;
         if (idFiled.startsWith(req.authId)) {
@@ -126,10 +139,12 @@ class AuthController {
                     data: data,
                 });
             })
+            .catch(err => next(err)); 
         }
         else {
-            const err = new Error('');
-            res.status(403).json({message: err.message})
+            const err = new Error('You dont have permission');
+            err.statusCode = 403;
+            return next(err);
             // next(err);
         }
     }
@@ -144,8 +159,7 @@ class AuthController {
             res.status(200).json({message: 'sussess'});
         }
         catch(err) {
-            res.status(500).json({message: "invalid"});
-            // next(err)
+            next(err)
         }
     }
 
@@ -171,7 +185,7 @@ class AuthController {
             })
        }
        catch(err) {
-            res.status(500).json({message: err.message})
+            next(err);
        }
     }
     

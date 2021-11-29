@@ -5,9 +5,9 @@ module.exports = function(req, res, next) {
 
     if (!Authorization) {
         // error
-        return res.status(404).json({
-            message: 'Invalid authorization'
-        })
+        const err = new Error('Invalid authorization');
+        err.statusCode = 401;
+        return next(err);
     }
 
     const token = Authorization && Authorization.split(' ')[1];
