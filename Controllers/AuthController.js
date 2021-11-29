@@ -10,7 +10,30 @@ class AuthController {
             name: 'homepage',
         });
     }
-    
+
+    //POST api/auth/registerAdmin
+    async registerAdmin(req, res, next) {
+        try {
+            const salt = await bcrypt.genSalt(10);
+            const hashPassword = await bcrypt.hash(req.body.password, salt);
+
+            const auth = new Auth({
+                id: req.body.id,
+                name: req.body.name,
+                password: hashPassword,
+                role: req.body.role, // 0 1 2 3 4
+            });
+            const newAuth = await auth.save();
+            res.status(200).json({
+                message: req.authId,
+                data: newAuth,
+            });
+        }
+        catch(err) {
+            res.status(500).json(err);
+        }
+    }
+
     //POST api/auth/register
     async register(req, res, next) {
         const id = req.body.id;
@@ -54,7 +77,7 @@ class AuthController {
                 const err = new Error('Invalid password')
                 return res.status(403).json({message: err.message});
             }
-            const token = jwt.sign( {authId: auth.id}, process.env.TOKEN_SECRET)
+            const token = jwt.sign( {authId: auth.id, role: auth.role, state: auth.state}, process.env.TOKEN_SECRET)
 
             res.status(200).json({
                 status: 'success',
@@ -91,30 +114,67 @@ class AuthController {
     // GET api/auth/:id
     getAccount(req, res, next) {
         const idFiled = req.params.id;
-        Auth.find({
-            id: {
-                $regex: `^${idFiled}[0-9][0-9]`, // id gốc 01 -> 01xx
+        if (idFiled.startsWith(req.authId)) {
+            Auth.find({
+                id: {
+                    $regex: `^${idFiled}[0-9][0-9]`, // id gốc 01 -> 01xx
+                }
+            })
+            .then( data => {
+                res.status(200).json({
+                    status: 200,
+                    data: data,
+                });
+            })
+        }
+        else {
+            const err = new Error('');
+            res.status(403).json({message: err.message})
+            // next(err);
+        }
+    }
+
+    // PATCH api/auth/changePassword
+    async changePassword(req, res , next) {
+        try {
+            const salt = await bcrypt.genSalt(10);
+            const hashNewPassword = await bcrypt.hash(req.body.password, salt);
+
+            await Auth.updateOne({id: req.authId}, {password: hashNewPassword});
+            res.status(200).json({message: 'sussess'});
+        }
+        catch(err) {
+            res.status(500).json({message: "invalid"});
+            // next(err)
+        }
+    }
+
+    // PATCH api/auth/changeStatus
+    async changeStatus(req, res , next) {
+       try {
+            if (req.body.state === false) {
+                if (req.authId === "00") {
+                    await Auth.updateMany({} , {state: false})
+                }
+                else {
+                    await Auth.updateMany({ id : {
+                        $regex: `^${req.authId}`
+                    }} , {state: false})
+                }
             }
-        })
-        .then( data => {
-            res.json(data);
-        })
+            else {
+                await Auth.updateOne({ id : req.authId }, { state: req.body.state})
+            }
+
+            res.status(200).json({
+                message: "sucessfully"
+            })
+       }
+       catch(err) {
+            res.status(500).json({message: err.message})
+       }
     }
-
-    // PATCH api/auth/:id/changePassword
-    changePassword(req, res , next) {
-
-    }
-
-    // PATCH api/auth//:id/changeAllStatus
-    changeStatus(req, res , next) {
-
-    }
-
-    // PATCH api/auth/:id/changeStatus/:subId
-    changeAllStatus(req, res , next) {
-
-    }
+    
 }
 
 module.exports = new AuthController();
