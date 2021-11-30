@@ -5,10 +5,16 @@ const jwt = require('jsonwebtoken');
 
 class AuthController {
     homepage(req, res) {
-        res.json({
-            message: 'Welcome',
-            name: 'homepage',
-        });
+        const query = req.query;
+        if (!query) {
+            res.json({
+                q: '123',
+            });
+        }
+        else {
+            res.json(query)
+        }
+       
     }
 
     //POST api/auth/registerAdmin
@@ -105,12 +111,16 @@ class AuthController {
        
     }
 
-    // DELETE api/auth/:id/ 
+    // DELETE api/auth/:subId/deleteAccount
     async destroy(req, res, next) {
-        const subId = req.params.id;
-        if (subId.startsWith(req.authId)) {
+        const subId = req.params.subId;
+        if (req.authId === '00' || subId.startsWith(req.authId)) {
             try {
-                await Auth.deleteOne({id : subId});
+                await Auth.deleteMany({
+                    id : {
+                        $regex: `^${subId}`,
+                    },
+                });
                 res.status(200).json({message: 'sussess'});
             }
             catch (err) {
@@ -126,7 +136,7 @@ class AuthController {
 
     // GET api/auth/:id/getAllAccount
     getAccount(req, res, next) {
-        const idFiled = req.params.id;
+        const idFiled = req.params.id !== '00' ? req.params.id : '';
         if (idFiled.startsWith(req.authId)) {
             Auth.find({
                 id: {

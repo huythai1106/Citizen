@@ -15,7 +15,7 @@ module.exports = function(req, res, next) {
 
     req.authId  =  authId ;
     req.role    =  role ;
-    req.state  =  state ;
+    req.state   =  state ;
 
     next();
 }
