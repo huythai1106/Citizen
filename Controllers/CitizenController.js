@@ -17,7 +17,7 @@ class citizenController {
     async getAllPopulation(req, res ,next) {
         const idArea = req.params.idArea;
         try {
-            if (idArea.startsWith(req.authId) || req.authId === '00') {
+            if ((idArea.length % 2 === 0 && idArea.startsWith(req.authId)) || req.authId === '00') {
                 const people = await Citizen.find({
                     idAddress: {
                         $regex: `^${idArea}`,
@@ -82,7 +82,7 @@ class citizenController {
         const idPerson = req.params.id;
 
         Citizen.updateOne({ _id : idPerson}, req.body)
-            .then((data) => res.stauts(200).json({
+            .then((data) => res.status(200).json({
                 message: 'Updated',
                 data: data,
             }))

@@ -136,11 +136,11 @@ class AuthController {
 
     // GET api/auth/:id/getAllAccount
     getAccount(req, res, next) {
-        const idFiled = req.params.id !== '00' ? req.params.id : '';
+        const idFiled = req.params.id;
         if (idFiled.startsWith(req.authId)) {
             Auth.find({
                 id: {
-                    $regex: `^${idFiled}[0-9][0-9]`, // id gốc 01 -> 01xx
+                    $regex: `^${idFiled}[0-9][0-9]$`, // id gốc 01 -> 01xx
                 }
             })
             .then( data => {
