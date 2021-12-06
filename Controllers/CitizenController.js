@@ -105,7 +105,7 @@ class citizenController {
         if (query.name) {
             try {
                 const name = query.name;
-                const person = await Citizen.findOne({ name });
+                const person = await Citizen.find({ name });
     
                 if (!person) {
                     return res.status(200).json({message: 'Could not find person'});

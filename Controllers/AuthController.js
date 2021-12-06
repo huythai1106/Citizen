@@ -96,6 +96,7 @@ class AuthController {
                     name: auth.name,
                     role: auth.role,
                     state: auth.state,
+                    dateTime: auth.deadTime,
                 }
             })
         }
@@ -175,19 +176,20 @@ class AuthController {
 
     // PATCH api/auth/changeStatus
     async changeStatus(req, res , next) {
-       try {
+        try {
             if (req.body.state === false) {
                 if (req.authId === "00") {
-                    await Auth.updateMany({} , {state: false})
+                    await Auth.updateMany({} , {state: false, dateTime: Date.now()})
                 }
                 else {
                     await Auth.updateMany({ id : {
                         $regex: `^${req.authId}`
-                    }} , {state: false})
+                    }} , {state: false, dateTime: Date.now()})
                 }
             }
             else {
-                await Auth.updateOne({ id : req.authId }, { state: req.body.state})
+                console.log(req.requestTime);
+                await Auth.updateOne({ id : req.authId }, { state: req.body.state, deadTime: req.requestTime})
             }
 
             res.status(200).json({

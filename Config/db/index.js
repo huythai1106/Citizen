@@ -5,6 +5,7 @@ async function connect () {
         // url trên browse : 
         // mongodb+srv://huythai:v9RrU23hq3kdyLX@cluster0.lpofb.mongodb.net/CitizenV?retryWrites=true&w=majority
         await mongoose.connect('mongodb+srv://huythai:v9RrU23hq3kdyLX@cluster0.lpofb.mongodb.net/CitizenV');
+        // await mongoose.connect('mongodb+srv://huythai:v9RrU23hq3kdyLX@cluster0.lpofb.mongodb.net/CitizenV?retryWrites=true&w=majority');
         console.log('Connect successfully');
     } catch (error) {
         console.log('Connect failure');

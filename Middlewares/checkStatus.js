@@ -8,7 +8,7 @@ module.exports = async function(req, res, next) {
         }
     
         let parentId = '';
-        let isCheck = true
+        let isCheck = true;
     
         const adminAuth = await Auth.findOne({ id: "00" });
         if (adminAuth.state === false) {

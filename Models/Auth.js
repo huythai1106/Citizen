@@ -8,6 +8,7 @@ const Auth = new Schema({
     password: {type: String, require: [true]},
     role: {type: Number, require: [true]},
     state: {type: Boolean, require: [true], default: false},
+    deadTime: {type: Date, default: Date.now()},
 }, {
     timestamps: true,
 })

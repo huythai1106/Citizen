@@ -12,3 +12,4 @@ const Citizen = new Schema({
 })
 
 module.exports = mongoose.model('Citizen', Citizen);
+
