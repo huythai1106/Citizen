@@ -86,7 +86,7 @@ class AuthController {
                 err.statusCode = 400;
                 return next(err);
             }
-            const token = jwt.sign( {authId: auth.id, role: auth.role, state: auth.state}, process.env.TOKEN_SECRET)
+            const token = jwt.sign( {authId: auth.id, role: auth.role, state: auth.state, deadTime: auth.deadTime}, process.env.TOKEN_SECRET)
 
             res.status(200).json({
                 status: 'success',
@@ -96,7 +96,7 @@ class AuthController {
                     name: auth.name,
                     role: auth.role,
                     state: auth.state,
-                    dateTime: auth.deadTime,
+                    deadTime: auth.deadTime,
                 }
             })
         }
@@ -189,7 +189,9 @@ class AuthController {
             }
             else {
                 console.log(req.requestTime);
-                await Auth.updateOne({ id : req.authId }, { state: req.body.state, deadTime: req.requestTime})
+                await Auth.updateOne({ id : {
+                    $regex: `^${req.authId}[0-9]`
+                }}, { state: req.body.state, deadTime: req.requestTime})
             }
 
             res.status(200).json({

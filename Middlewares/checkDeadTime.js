@@ -8,20 +8,10 @@ module.exports = async function(req, res, next) {
 
     let isCheckTime = true;
 
-    let parentId = '';
+    console.log(req.deadTime, 'Checking');
+    const deadTime = new Date(req.deadTime);
 
-    if (req.authId.length === 2) {
-        paterntId = '00';
-    }
-    else {
-        for (var i = 0 ; i < req.role - 1; i++) {
-            parentId += req.authId[2*i] + req.authId[2*i+1];
-        }
-    }
-
-    const parent = await Auth.findOne({ id: parentId})
-
-    if (parent.deadTime.getTime() < Date.now())  isCheckTime = false;
+     if ( deadTime.getTime() < Date.now())  isCheckTime = false;
 
     if (!isCheckTime) {
         const err = new Error('Hết thời gian quyền thêm người');
